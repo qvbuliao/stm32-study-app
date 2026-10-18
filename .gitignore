@@ -1,0 +1,20 @@
+# 依赖与构建缓存
+node_modules/
+package-lock.json
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时与日志
+*.log
+*.tmp
+*.bak
+
+# 截图 / 诊断产物
+shots/
+*.png
+!docs/**/*.png

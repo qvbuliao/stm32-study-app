@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>STM32 五天速通 · [2-2]→[6-2]</title>
+<style>
+:root{
+  --bg:#0e1117; --bg2:#151a23; --bg3:#1c2331; --line:#28303f;
+  --fg:#e6edf3; --fg2:#9aa7b8; --fg3:#6b7788;
+  --acc:#4ea1ff; --acc2:#2b6cb0; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Cascadia Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:16px;line-height:1.7;overscroll-behavior-y:none}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+a{color:var(--acc);text-decoration:none}
+b,strong{color:#fff}
+
+/* ---------- 顶栏 ---------- */
+header{position:sticky;top:0;z-index:30;background:rgba(14,17,23,.92);
+  backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line);
+  padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.hd{display:flex;align-items:center;gap:10px}
+.hd h1{margin:0;font-size:16px;font-weight:650;letter-spacing:.2px;flex:1}
+.hd .sub{font-size:11px;color:var(--fg3);display:block;font-weight:400;letter-spacing:0}
+#pbar{height:3px;background:var(--bg3);border-radius:2px;margin-top:9px;overflow:hidden}
+#pfill{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width .3s}
+.chip{font-size:11px;color:var(--fg2);background:var(--bg3);border:1px solid var(--line);
+  padding:3px 8px;border-radius:999px;white-space:nowrap}
+
+/* ---------- 底部导航 ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;
+  background:rgba(15,19,26,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--fg3);font-family:var(--sans);
+  font-size:11px;padding:9px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav button .ic{font-size:19px;line-height:1}
+nav button.on{color:var(--acc)}
+
+/* ---------- 视图 ---------- */
+main{padding:14px 14px 20px;max-width:820px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+
+/* ---------- 通用块 ---------- */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;
+  padding:14px;margin:0 0 12px}
+.card h2{margin:0 0 8px;font-size:17px}
+h2{font-size:18px;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:15.5px;margin:18px 0 8px;color:var(--acc)}
+h4{font-size:14.5px;margin:14px 0 6px;color:#fff}
+p{margin:9px 0}
+ul,ol{margin:8px 0;padding-left:20px}
+li{margin:5px 0}
+code{font-family:var(--mono);font-size:.88em;background:var(--bg3);
+  padding:1.5px 5px;border-radius:5px;color:#ffd580;word-break:break-word}
+pre{background:#0b0f16;border:1px solid var(--line);border-radius:10px;
+  padding:11px 12px;overflow-x:auto;margin:10px 0;font-size:12.5px;line-height:1.62;
+  -webkit-overflow-scrolling:touch}
+pre code{background:none;padding:0;color:#cbd5e1;white-space:pre}
+pre::-webkit-scrollbar{height:5px}
+pre::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;display:block;overflow-x:auto;
+  -webkit-overflow-scrolling:touch}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg3);color:#fff;font-weight:600}
+blockquote{margin:10px 0;padding:9px 12px;background:rgba(78,161,255,.09);
+  border-left:3px solid var(--acc);border-radius:0 9px 9px 0}
+blockquote.warn{background:rgba(210,153,34,.11);border-color:var(--warn)}
+blockquote.bad{background:rgba(248,81,73,.11);border-color:var(--bad)}
+blockquote.ok{background:rgba(63,185,80,.11);border-color:var(--ok)}
+blockquote p{margin:4px 0}
+
+/* ---------- 计划 ---------- */
+.day{background:var(--bg2);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.day-h{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
+.day-h .no{width:42px;height:34px;flex:none;border-radius:10px;background:var(--bg3);
+  display:grid;place-items:center;font-size:11.5px;font-weight:700;color:var(--acc);
+  white-space:nowrap;letter-spacing:-.2px}
+.day-h .t{flex:1;min-width:0}
+.day-h .t b{display:block;font-size:14.5px}
+.day-h .t span{font-size:11.5px;color:var(--fg3)}
+.day-h .pct{font-size:11px;color:var(--fg2);font-variant-numeric:tabular-nums}
+.day.done .day-h .no{background:rgba(63,185,80,.18);color:var(--ok)}
+.day-b{display:none;padding:0 14px 14px;border-top:1px solid var(--line)}
+.day.open .day-b{display:block}
+.day-b .goal{font-size:12.5px;color:var(--fg2);background:var(--bg3);
+  border-radius:9px;padding:8px 10px;margin:11px 0}
+.task{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line)}
+.task:last-child{border-bottom:0}
+.task input{width:19px;height:19px;margin:3px 0 0;flex:none;accent-color:var(--ok)}
+.task .tt{flex:1;min-width:0;font-size:13.5px}
+.task .tt small{display:block;color:var(--fg3);font-size:11.5px;margin-top:2px}
+.task.done .tt{color:var(--fg3);text-decoration:line-through}
+.task.done .tt small{text-decoration:none}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:10.5px;padding:2px 7px;border-radius:6px;background:var(--bg3);color:var(--fg2);
+  border:1px solid var(--line)}
+.tag.must{color:#ffb545;border-color:rgba(255,181,69,.35)}
+.tag.skip{color:var(--fg3)}
+.tag.pj{color:#7ee2b8;border-color:rgba(126,226,184,.3)}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--acc2);color:#fff;
+  border:0;border-radius:9px;padding:9px 14px;font-size:13.5px;font-family:var(--sans);cursor:pointer}
+.btn.ghost{background:var(--bg3);color:var(--fg);border:1px solid var(--line)}
+.btn.smk{padding:6px 10px;font-size:12.5px}
+
+/* ---------- 课程 ---------- */
+#topics{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+#topics::-webkit-scrollbar{display:none}
+#topics button{flex:none;background:var(--bg3);border:1px solid var(--line);color:var(--fg2);
+  border-radius:999px;padding:6px 11px;font-size:12px;font-family:var(--sans);cursor:pointer}
+#topics button.on{background:var(--acc2);border-color:var(--acc);color:#fff}
+.read{margin-bottom:8px}
+.read-h{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--bg2);
+  border:1px solid var(--line);border-radius:11px;cursor:pointer}
+.read-h .no{font-family:var(--mono);font-size:12px;color:var(--acc);flex:none}
+.read-h b{flex:1;font-size:14px}
+.read-h .ck{font-size:12px;color:var(--fg3)}
+.read-h.done .ck{color:var(--ok)}
+.read-b{display:none;background:var(--bg2);border:1px solid var(--line);border-top:0;
+  border-radius:0 0 11px 11px;padding:4px 14px 14px;margin-top:-4px}
+.read.open .read-h{border-radius:11px 11px 0 0}
+.read.open .read-b{display:block}
+.meta{font-size:11.5px;color:var(--fg3);margin:9px 0 0;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- 急救 / 速查 ---------- */
+.fold{background:var(--bg2);border:1px solid var(--line);border-radius:11px;
+  margin-bottom:9px;overflow:hidden}
+.fold>summary{padding:11px 13px;cursor:pointer;font-size:14px;font-weight:600;
+  list-style:none;display:flex;align-items:center;gap:8px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::marker{content:""}
+.fold>summary::before{content:"▸";color:var(--acc);font-size:12px}
+.fold[open]>summary::before{content:"▾"}
+.fold>div{padding:0 13px 13px;font-size:14px}
+.search{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:10px;
+  color:var(--fg);font-family:var(--sans);font-size:14px;padding:10px 12px;margin-bottom:10px}
+.search::placeholder{color:var(--fg3)}
+
+/* ---------- 自测 ---------- */
+.q{background:var(--bg2);border:1px solid var(--line);border-radius:13px;
+  padding:13px;margin-bottom:12px}
+.q .stem{font-size:14px;margin-bottom:10px}
+.q .stem .no{color:var(--acc);font-family:var(--mono);font-size:12px;margin-right:6px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg3);border:1px solid var(--line);
+  color:var(--fg);border-radius:9px;padding:10px 12px;margin-bottom:7px;font-size:13.5px;
+  font-family:var(--sans);cursor:pointer;line-height:1.55}
+.opt.ok{background:rgba(63,185,80,.16);border-color:var(--ok)}
+.opt.bad{background:rgba(248,81,73,.16);border-color:var(--bad)}
+.exp{display:none;margin-top:9px;padding:10px 12px;background:rgba(78,161,255,.09);
+  border-left:3px solid var(--acc);border-radius:0 9px 9px 0;font-size:13px}
+.exp.on{display:block}
+.score{font-size:13px;color:var(--fg2);margin:0 0 12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom));
+  background:rgba(40,48,63,.97);border:1px solid var(--line);color:#fff;font-size:13px;
+  padding:9px 15px;border-radius:999px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+@media(max-width:400px){
+  main{padding:12px 11px 18px}
+  table{font-size:12px}
+  th,td{padding:5px 6px}
+  pre{font-size:11.5px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <div style="flex:1;min-width:0">
+      <h1>STM32 五天速通<span class="sub">[2-2] 新建工程 → [6-2] 定时器定时中断 &amp; 外部时钟</span></h1>
+    </div>
+    <span class="chip" id="overall">0%</span>
+  </div>
+  <div id="pbar"><div id="pfill"></div></div>
+</header>
+
+<main>
+  <div class="view on" id="v-plan"></div>
+  <div class="view" id="v-course"></div>
+  <div class="view" id="v-c"></div>
+  <div class="view" id="v-ref"></div>
+  <div class="view" id="v-quiz"></div>
+</main>
+
+<nav>
+  <button data-v="plan" class="on"><span class="ic">📅</span>计划</button>
+  <button data-v="course"><span class="ic">📘</span>课程</button>
+  <button data-v="c"><span class="ic">🩹</span>急救</button>
+  <button data-v="ref"><span class="ic">🔍</span>速查</button>
+  <button data-v="quiz"><span class="ic">✅</span>自测</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>/*__DATA__*/</script>
+
+<script>
+/* ============================================================
+   STM32 五天速通学习器 —— 单文件离线学习 App
+   数据（PLAN / COURSES / CSURV / REF / QUIZ）内联在上方 script
+   ============================================================ */
+
+/* ---------- 轻量标记渲染 ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function md(src){
+  const lines = src.split('\n');
+  let out=[], i=0, inCode=false;
+  const inline = t => esc(t)
+    .replace(/\\\|/g,'|')
+    .replace(/\[\[([^\]]+)\]\]/g,'<code>$1</code>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  while(i<lines.length){
+    const L=lines[i];
+    if(/^```/.test(L) || /^\[\[\[[a-z0-9]*\]?\s*$/.test(L)){   // 代码块（``` 或 [[[c] ... ]]）
+      let buf=[], open = /^\[\[\[/.test(L); i++;
+      while(i<lines.length && !(open?/^\s*\]\]+\s*$/.test(lines[i]):/^```/.test(lines[i]))) buf.push(lines[i++]);
+      i++;
+      out.push('<pre><code>'+esc(buf.join('\n'))+'</code></pre>'); continue;
+    }
+    if(/^\|/.test(L)){                        // 表格
+      let rows=[];
+      while(i<lines.length && /^\|/.test(lines[i])){
+        const raw=lines[i].replace(/\\\|/g,'\u0000');          // 保护转义竖线 \|
+        const cells=raw.replace(/^\||\|$/g,'').split('|').map(c=>c.trim().replace(/\u0000/g,'|'));
+        if(!/^[\s\-:|]+$/.test(lines[i].replace(/\|/g,''))) rows.push(cells);
+        i++;
+      }
+      if(rows.length){
+        let h='<table>';
+        rows.forEach((r,ri)=>{
+          h+='<tr>'+(ri===0?'<th>':'<td>')+r.map(c=>inline(c)).join(ri===0?'</th><th>':'</td><td>')+(ri===0?'</th>':'</td>')+'</tr>';
+        });
+        out.push(h+'</table>');
+      }
+      continue;
+    }
+    if(/^#{2,4}\s/.test(L) || /^\[h[2-4]\]\s/.test(L)){   // 标题（## / [h3] 两种写法）
+      const lv = /^\[h/.test(L) ? +L.match(/^\[h(\d)\]/)[1] : L.match(/^#+/)[0].length;
+      out.push('<h'+lv+'>'+inline(L.replace(/^(#+\s*|\[h[2-4]\]\s*)/,''))+'</h'+lv+'>'); i++; continue;
+    }
+    if(/^>\s?/.test(L) || /^\[(warn|ok|bad)\]\s*/.test(L)){   // 引用块（> ... 或裸 [warn]/[ok]/[bad]）
+      let buf=[], kind='';
+      const isQ = s => /^>/.test(s) || /^\[(warn|ok|bad)\]\s*/.test(s);
+      const stripQ = s => s.replace(/^>\s?/,'').replace(/^\[(warn|ok|bad)\]\s*/,'');
+      while(i<lines.length && isQ(lines[i])){
+        const s=lines[i];
+        const m = s.match(/^>\s?\[(warn|ok|bad)\]/) || s.match(/^\[(warn|ok|bad)\]/);
+        if(m) kind = m[1];
+        buf.push(stripQ(s)); i++;
+      }
+      out.push('<blockquote'+(kind?' class="'+kind+'"':'')+'>'+md(buf.join('\n'))+'</blockquote>'); continue;
+    }
+    if(/^\s*(-|\d+\.)\s/.test(L)){            // 列表
+      const ordered=/^\s*\d+\./.test(L);
+      let buf=[];
+      while(i<lines.length && /^\s*(-|\d+\.)\s/.test(lines[i])) buf.push(lines[i++]);
+      out.push('<'+ (ordered?'ol':'ul') +'>'+buf.map(b=>'<li>'+inline(b.replace(/^\s*(-|\d+\.)\s*/,''))+'</li>').join('')+'</'+(ordered?'ol':'ul')+'>');
+      continue;
+    }
+    if(/^\s*$/.test(L)){ i++; continue; }
+    let buf=[];
+    while(i<lines.length && !/^\s*$/.test(lines[i]) && !/^(#|>|\||```|\[\[\[)/.test(lines[i]) && !/^\[(warn|ok|bad)\]/.test(lines[i]) && !/^\s*(-|\d+\.)\s/.test(lines[i])) buf.push(lines[i++]);
+    out.push('<p>'+buf.map(inline).join(' ')+'</p>');
+  }
+  return out.join('');
+}
+
+/* ---------- 进度存储 ---------- */
+const KEY='stm32-5d-progress-v1';
+let STORE={};
+try{ STORE=JSON.parse(localStorage.getItem(KEY)||'{}')||{} }catch(e){ STORE={} }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(STORE)) }catch(e){} }
+function isDone(id){ return !!STORE[id] }
+function toggle(id){ STORE[id]=!STORE[id]; if(!STORE[id]) delete STORE[id]; save(); refreshAll() }
+
+/* ---------- 渲染：计划 ---------- */
+function planTaskHTML(t){
+  const done=isDone(t.id);
+  return '<label class="task'+(done?' done':'')+'" data-task="'+t.id+'">'
+    +'<input type="checkbox" data-task="'+t.id+'"'+(done?' checked':'')+'>'
+    +'<span class="tt">'+esc(t.t)
+    +(t.s?'<small>'+esc(t.s)+'</small>':'')
+    +(t.tags&&t.tags.length?'<span class="tags">'+t.tags.map(g=>'<span class="tag '+g.k+'">'+esc(g.n)+'</span>').join('')+'</span>':'')
+    +'</span></label>';
+}
+function renderPlan(){
+  let h='<div class="card"><h2>怎么用这个 App</h2>'
+    +md('每天点开 **计划** 页，把当天的任务挨个打勾；任务里的 `[视频]` 标签是 B 站分 P，直接点开看。\n'
+      +'看视频时先别急着写代码，**看完一集就用「课程」页的详解复习一遍**，再回去手动敲代码。\n'
+      +'进度存在手机本地，换页面、关浏览器都不会丢。')
+    +'</div>';
+  PLAN.forEach(d=>{
+    const total=d.tasks.length, done=d.tasks.filter(t=>isDone(t.id)).length;
+    h+='<div class="day'+(done===total?' done':'')+' open" data-day="'+d.id+'">'
+      +'<div class="day-h" data-dayh="'+d.id+'">'
+      +'<span class="no">'+d.no+'</span>'
+      +'<span class="t"><b>'+esc(d.title)+'</b><span>'+esc(d.sub)+'</span></span>'
+      +'<span class="pct">'+done+'/'+total+'</span></div>'
+      +'<div class="day-b"><div class="goal">'+md(d.goal)+'</div>'
+      +d.tasks.map(planTaskHTML).join('')
+      +'</div></div>';
+  });
+  document.getElementById('v-plan').innerHTML=h;
+}
+
+/* ---------- 渲染：课程 ---------- */
+let curTopic=0;
+function renderCourse(){
+  let tabs='<div id="topics">';
+  COURSES.forEach((c,i)=>{
+    tabs+='<button data-topic="'+i+'"'+(i===curTopic?' class="on"':'')+'>'+esc(c.p)+' '+esc(c.short)+'</button>';
+  });
+  tabs+='</div>';
+  let body='';
+  COURSES.forEach((c,i)=>{
+    if(i!==curTopic) return;
+    c.items.forEach(it=>{
+      const done=isDone(it.id);
+      body+='<div class="read'+(done?' done':'')+' open" data-read="'+it.id+'">'
+        +'<div class="read-h" data-readh="'+it.id+'">'
+        +'<span class="no">'+esc(c.p)+'-'+esc(it.no)+'</span>'
+        +'<b>'+esc(it.t)+'</b>'
+        +'<span class="ck">'+(done?'✅ 已复习':'○ 未复习')+'</span></div>'
+        +'<div class="read-b">'
+        +(c.link?'<div class="meta"><a href="'+c.link+'" target="_blank">▶ 打开这一集视频（B 站 P'+(c.link.split('p=')[1])+'）</a></div>':'')
+        +md(it.body)
+        +'<div class="meta"><button class="btn smk" data-toq="'+it.id+'">标记为已复习</button></div>'
+        +'</div></div>';
+    });
+  });
+  document.getElementById('v-course').innerHTML=tabs+'<div class="read-list">'+body+'</div>';
+}
+function renderC(){
+  let h='';
+  CSURV.forEach(g=>{
+    h+='<details class="fold"'+(g.open?' open':'')+'><summary>'+esc(g.t)+'</summary><div>'+md(g.body)+'</div></details>';
+  });
+  document.getElementById('v-c').innerHTML=h;
+}
+function renderRef(){
+  let h='<input class="search" id="refq" placeholder="搜索：GPIO / 定时器 / 中断 …">';
+  h+='<div id="reflist">';
+  REF.forEach(g=>{ h+=refCard(g) });
+  h+='</div>';
+  document.getElementById('v-ref').innerHTML=h;
+  document.getElementById('refq').addEventListener('input',e=>{
+    const q=e.target.value.trim().toLowerCase();
+    const list=REF.filter(g=>!q || (g.t+' '+g.body).toLowerCase().includes(q));
+    document.getElementById('reflist').innerHTML = list.length? list.map(refCard).join('') : '<p style="color:var(--fg3)">没找到，换个关键词试试。</p>';
+  });
+}
+function refCard(g){
+  return '<details class="fold"'+(g.open?' open':'')+'><summary>'+esc(g.t)+'</summary><div>'+md(g.body)+'</div></details>';
+}
+
+/* ---------- 渲染：自测 ---------- */
+let quizState={};
+function renderQuiz(){
+  const answered=Object.keys(quizState).length;
+  const right=Object.values(quizState).filter(v=>v.right).length;
+  let h='<p class="score">已答 '+answered+' / '+QUIZ.length+' 题'+(answered?'　正确 '+right+'（'+Math.round(right/answered*100)+'%）':'')
+    +(answered?'<button class="btn ghost smk" id="resetq" style="margin-left:8px">重做</button>':'')+'</p>';
+  QUIZ.forEach((q,qi)=>{
+    const st=quizState[qi];
+    h+='<div class="q"><div class="stem"><span class="no">Q'+(qi+1)+'</span>'+md(q.q).replace(/^<p>|<\/p>$/g,'')+'</div>';
+    q.o.forEach((o,oi)=>{
+      let cls='opt';
+      if(st){ if(oi===q.a) cls+=' ok'; else if(oi===st.pick) cls+=' bad'; }
+      h+='<button class="'+cls+'" data-q="'+qi+'" data-o="'+oi+'">'+esc(o)+'</button>';
+    });
+    h+='<div class="exp'+(st?' on':'')+'"><b>正确答案：'+'ABCD'[q.a]+'　</b>'+md(q.e).replace(/^<p>|<\/p>$/g,'')+'</div></div>';
+  });
+  document.getElementById('v-quiz').innerHTML=h;
+  const rb=document.getElementById('resetq');
+  if(rb) rb.onclick=()=>{ quizState={}; renderQuiz() };
+}
+
+/* ---------- 进度统计 ---------- */
+function refreshAll(){
+  const ids=[];
+  PLAN.forEach(d=>d.tasks.forEach(t=>ids.push(t.id)));
+  COURSES.forEach(c=>c.items.forEach(t=>ids.push(t.id)));
+  const done=ids.filter(isDone).length;
+  const pct=ids.length? Math.round(done/ids.length*100):0;
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('overall').textContent=pct+'%';
+}
+
+/* ---------- 事件 ---------- */
+document.querySelector('nav').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-v]'); if(!b) return;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));
+  if(b.dataset.v==='quiz') renderQuiz();
+  if(b.dataset.v==='course') renderCourse();
+  window.scrollTo(0,0);
+});
+document.body.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.matches('header .hd h1')){ window.scrollTo(0,0); return }
+  const dh=t.closest('[data-dayh]');
+  if(dh){ const d=dh.closest('.day'); d.classList.toggle('open'); return }
+  const rh=t.closest('[data-readh]');
+  if(rh){ const r=rh.closest('.read'); r.classList.toggle('open'); return }
+  const tp=t.closest('#topics button[data-topic]');
+  if(tp){ curTopic=+tp.dataset.topic; renderCourse(); return }
+  const toq=t.closest('[data-toq]');
+  if(toq){ toggle(toq.dataset.toq); renderCourse(); toast(isDone(toq.dataset.toq)?'已标记复习完成':'已取消'); return }
+  const qo=t.closest('button[data-q]');
+  if(qo){
+    const qi=+qo.dataset.q, oi=+qo.dataset.o;
+    if(quizState[qi]) return;
+    quizState[qi]={pick:oi,right:oi===QUIZ[qi].a};
+    renderQuiz();
+    const el=document.querySelectorAll('.q')[qi]; if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+    return;
+  }
+});
+document.body.addEventListener('change',e=>{
+  const c=e.target.closest('input[type=checkbox][data-task]');
+  if(c){ toggle(c.dataset.task) }
+});
+let toastT;
+function toast(m){
+  const el=document.getElementById('toast'); el.textContent=m; el.classList.add('on');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),1400);
+}
+
+/* ---------- 启动 ---------- */
+renderPlan(); renderCourse(); renderC(); renderRef(); renderQuiz(); refreshAll();
+</script>
+</body>
+</html>
