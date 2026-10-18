@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="STM32">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>STM32 五天速通 · [2-2]→[6-2]</title>
 <style>
 :root{
@@ -437,6 +441,17 @@ function toast(m){
 
 /* ---------- 启动 ---------- */
 renderPlan(); renderCourse(); renderC(); renderRef(); renderQuiz(); refreshAll();
+
+/* ---------- 离线支持：注册 Service Worker ----------
+   生效于 https（GitHub Pages）以及 localhost（本地测试）。
+   file:// 与 http://内网IP 下浏览器不允许注册 SW，
+   那种情况本身已是本地文件，不需要联网，所以自动跳过即可。 */
+if('serviceWorker' in navigator &&
+   (location.protocol === 'https:' || ['localhost','127.0.0.1'].includes(location.hostname))){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>

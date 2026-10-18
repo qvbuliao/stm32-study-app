@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#0e1117}
+  /* 设计基准 512×512，用 vmin 保证任意截图尺寸都等比 */
+  .icon{position:relative;width:512px;height:512px;
+    background:radial-gradient(120% 120% at 30% 20%,#1e2c3d 0%,#0e1117 58%,#091624 100%);
+    overflow:hidden}
+  .glow{position:absolute;inset:0;
+    background:radial-gradient(60% 55% at 50% 45%,rgba(78,161,255,.20),transparent 70%)}
+  .chip{position:absolute;left:13%;top:13%;width:74%;height:74%;
+    border:16px solid rgba(78,161,255,.26);border-radius:74px;box-sizing:border-box;
+    background:rgba(78,161,255,.05)}
+  .pins{position:absolute;inset:0}
+  .txt{position:absolute;left:0;right:0;top:34%;text-align:center;
+    font:700 140px/1 system-ui,-apple-system,"Segoe UI",sans-serif;color:#4ea1ff;
+    letter-spacing:-5px;text-shadow:0 0 26px rgba(78,161,255,.75)}
+  .sub{position:absolute;left:0;right:0;top:69%;text-align:center;
+    font:600 34px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:#9aa7b8;letter-spacing:10px;text-indent:10px}
+</style></head>
+<body>
+<div class="icon">
+  <div class="glow"></div>
+  <div class="chip"></div>
+  <svg class="pins" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <g stroke="#4ea1ff" stroke-width="2.6" stroke-linecap="round" opacity=".66">
+      <line x1="30" y1="4" x2="30" y2="14"/><line x1="42" y1="4" x2="42" y2="14"/>
+      <line x1="54" y1="4" x2="54" y2="14"/><line x1="66" y1="4" x2="66" y2="14"/>
+      <line x1="30" y1="86" x2="30" y2="96"/><line x1="42" y1="86" x2="42" y2="96"/>
+      <line x1="54" y1="86" x2="54" y2="96"/><line x1="66" y1="86" x2="66" y2="96"/>
+      <line x1="4" y1="30" x2="14" y2="30"/><line x1="4" y1="42" x2="14" y2="42"/>
+      <line x1="4" y1="54" x2="14" y2="54"/><line x1="4" y1="66" x2="14" y2="66"/>
+      <line x1="86" y1="30" x2="96" y2="30"/><line x1="86" y1="42" x2="96" y2="42"/>
+      <line x1="86" y1="54" x2="96" y2="54"/><line x1="86" y1="66" x2="96" y2="66"/>
+    </g>
+  </svg>
+  <div class="txt">ST</div>
+  <div class="sub">STM32</div>
+</div>
+</body></html>

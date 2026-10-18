@@ -14,7 +14,9 @@ desktop.ini
 *.tmp
 *.bak
 
-# 截图 / 诊断产物
+# 截图 / 诊断产物（保留 PWA 图标）
 shots/
 *.png
-!docs/**/*.png
+!icon-192.png
+!icon-512.png
+!icon-maskable-512.png
